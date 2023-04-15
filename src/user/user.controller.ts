@@ -30,7 +30,10 @@ export class UserController {
     @Param('userName') userName: string,
     paginationQuery: PaginationQueryDto,
   ) {
-    const list = await this.userService.findByName(userName, paginationQuery);
+    const list = await this.userService.findByLikeName(
+      userName,
+      paginationQuery,
+    );
     return list;
   }
 

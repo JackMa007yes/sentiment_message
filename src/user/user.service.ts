@@ -46,15 +46,14 @@ export class UserService {
     return userList;
   }
 
-  async _findOneByName(name: string) {
+  async findByName(name: string) {
     const user = await this.usersRepository.find({
       where: { name: name },
-      select: ['id', 'name'],
     });
     return user[0];
   }
 
-  findByName(name: string, paginationQuery: PaginationQueryDto) {
+  findByLikeName(name: string, paginationQuery: PaginationQueryDto) {
     const { limit, offset } = paginationQuery;
     return this.usersRepository.find({
       where: { name: Like(`%${name}%`) },
@@ -65,7 +64,7 @@ export class UserService {
   }
 
   async create(user: CreateUserDto): Promise<User> {
-    const existUser = await this._findOneByName(user.name);
+    const existUser = await this.findByName(user.name);
     if (existUser) {
       throw new HttpException(
         `user ${user.name} has been created`,
@@ -77,7 +76,7 @@ export class UserService {
   }
 
   async update(id: number, user: UpdateUserDto): Promise<User> {
-    const nameExist = await this._findOneByName(user.name);
+    const nameExist = await this.findByName(user.name);
     if (nameExist) {
       throw new HttpException(
         `name ${user.name} has been used`,
