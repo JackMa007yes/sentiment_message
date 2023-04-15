@@ -21,6 +21,7 @@ export class UserService {
   findAll(paginationQuery: PaginationQueryDto): Promise<User[]> {
     const { limit, offset } = paginationQuery;
     return this.usersRepository.find({
+      select: ['id', 'name'],
       skip: offset,
       take: limit,
     });
@@ -35,6 +36,14 @@ export class UserService {
       throw new NotFoundException(`user ${id} not fount`);
     }
     return user[0];
+  }
+
+  async findByIdList(idList: number[]) {
+    const userList = await Promise.all(idList.map((id) => this.findOne(id)));
+    if (userList.some((user) => !user)) {
+      throw new NotFoundException(`user not fount`);
+    }
+    return userList;
   }
 
   async _findOneByName(name: string) {
