@@ -8,12 +8,13 @@ import {
   Get,
   Patch,
   HttpCode,
-  HttpStatus,
+  Request,
   Param,
   Post,
   Query,
 } from '@nestjs/common';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { Public } from 'src/common/decorators/punlic.decorators';
 
 @Controller('user')
 export class UserController {
@@ -23,6 +24,12 @@ export class UserController {
   async getAll(@Query() paginationQuery: PaginationQueryDto) {
     const list = await this.userService.findAll(paginationQuery);
     return list;
+  }
+
+  @Get('my')
+  async getProfile(@Request() req: any) {
+    const id = req.user.sub;
+    return this.userService.findOne(id);
   }
 
   @Get(':userName')
@@ -42,8 +49,8 @@ export class UserController {
     return this.userService.remove(id);
   }
 
+  @Public()
   @Post()
-  @HttpCode(HttpStatus.GONE)
   async register(@Body() createUser: CreateUserDto) {
     return this.userService.create(createUser);
   }
