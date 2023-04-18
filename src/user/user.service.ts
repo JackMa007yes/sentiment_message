@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, DataSource } from 'typeorm';
 import { User } from './user.entity';
 
 @Injectable()
@@ -16,15 +16,20 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private dataSource: DataSource,
   ) {}
 
-  findAll(paginationQuery: PaginationQueryDto): Promise<User[]> {
-    const { limit, offset } = paginationQuery;
-    return this.usersRepository.find({
-      select: ['id', 'name'],
-      skip: offset,
-      take: limit,
-    });
+  async findAll(paginationQuery: PaginationQueryDto): Promise<any> {
+    const { limit, offset } = paginationQuery || {};
+    const userData = await this.dataSource
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .select(['user.name', 'user.id'])
+      .skip(offset)
+      .take(limit)
+      .getManyAndCount();
+
+    return { data: userData[0], limit, offset, total: userData[1] };
   }
 
   async findOne(id: number) {

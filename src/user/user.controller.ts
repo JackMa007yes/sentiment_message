@@ -21,7 +21,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  async getAll(@Query() paginationQuery: PaginationQueryDto) {
+  async getAll(@Query() paginationQuery?: PaginationQueryDto) {
     const list = await this.userService.findAll(paginationQuery);
     return list;
   }
@@ -35,7 +35,7 @@ export class UserController {
   @Get(':userName')
   async getUserList(
     @Param('userName') userName: string,
-    paginationQuery: PaginationQueryDto,
+    paginationQuery?: PaginationQueryDto,
   ) {
     const list = await this.userService.findByLikeName(
       userName,
