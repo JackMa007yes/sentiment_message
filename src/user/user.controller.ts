@@ -1,20 +1,26 @@
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UserService } from './user.service';
+import { UserService } from './service/user.service';
 import {
   Body,
   Controller,
   Delete,
   Get,
   Patch,
-  HttpCode,
   Request,
   Param,
   Post,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
+  HttpCode,
 } from '@nestjs/common';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { Public } from 'src/common/decorators/punlic.decorators';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 export class UserController {
@@ -61,5 +67,22 @@ export class UserController {
     @Body() updateUser: UpdateUserDto,
   ) {
     return this.userService.update(userId, updateUser);
+  }
+
+  @Post('/avatar')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAvatar(
+    @Request() request: any,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 2000 * 500 }),
+          new FileTypeValidator({ fileType: 'image/png' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.userService.uploadAvatar(request.user.sub, file);
   }
 }

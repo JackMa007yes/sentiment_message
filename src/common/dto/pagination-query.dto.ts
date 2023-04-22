@@ -9,5 +9,5 @@ export class PaginationQueryDto {
   @IsOptional()
   @IsPositive()
   // @Type(() => Number)
-  offset: number;
+  page: number;
 }

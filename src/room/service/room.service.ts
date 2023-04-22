@@ -12,26 +12,29 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Room } from '../entities/room.entity';
-import { UserService } from 'src/user/user.service';
+import { UserService } from 'src/user/service/user.service';
 
 @Injectable()
 export class RoomService {
   constructor(
     private readonly userService: UserService,
-    private readonly datasource: DataSource,
+    private readonly dataSource: DataSource,
     @InjectRepository(Room)
     private readonly RoomRepository: Repository<Room>,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
   ) {}
 
-  findAll(paginationQuery: PaginationQueryDto) {
-    const { limit, offset } = paginationQuery;
-    return this.RoomRepository.find({
-      skip: offset,
-      take: limit,
-      relations: ['users'],
-    });
+  async findAll(paginationQuery?: PaginationQueryDto) {
+    const { limit, page } = paginationQuery || {};
+    const userData = await this.dataSource
+      .getRepository(Room)
+      .createQueryBuilder('room')
+      .skip(page ? (page - 1) * limit : undefined)
+      .take(limit)
+      .getManyAndCount();
+
+    return { data: userData[0], limit, page, total: userData[1] };
   }
 
   async findOne(id: number) {
@@ -47,7 +50,7 @@ export class RoomService {
   }
 
   async findByUserId(id: number) {
-    const queryRunner = this.datasource.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     const roomIds = await queryRunner.query(
       `
@@ -81,17 +84,16 @@ export class RoomService {
   }
 
   async getMessage(id: number, paginationQuery: PaginationQueryDto) {
-    const { limit, offset } = paginationQuery;
-    return await this.messageRepository.find({
-      where: {
-        roomId: id,
-      },
-      order: {
-        id: 'DESC',
-      },
-      skip: offset,
-      take: limit,
-    });
+    const { limit, page } = paginationQuery || {};
+    const messageData = await this.dataSource
+      .getRepository(Message)
+      .createQueryBuilder('message')
+      .where({ roomId: id })
+      .skip(page ? (page - 1) * limit : undefined)
+      .take(limit)
+      .getManyAndCount();
+
+    return { data: messageData[0], limit, page, total: messageData[1] };
   }
 
   async addMessage(createMessageDto: CreateMessageDto) {

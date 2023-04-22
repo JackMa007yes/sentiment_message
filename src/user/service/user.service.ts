@@ -1,6 +1,7 @@
-import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationQueryDto } from './../common/dto/pagination-query.dto';
-import { CreateUserDto } from './dto/create-user.dto';
+import { ImageService } from './image.service';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { CreateUserDto } from '../dto/create-user.dto';
 import {
   HttpException,
   HttpStatus,
@@ -9,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, DataSource } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../user.entity';
 
 @Injectable()
 export class UserService {
@@ -17,25 +18,26 @@ export class UserService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private dataSource: DataSource,
+    private imageService: ImageService,
   ) {}
 
-  async findAll(paginationQuery: PaginationQueryDto): Promise<any> {
-    const { limit, offset } = paginationQuery || {};
+  async findAll(paginationQuery?: PaginationQueryDto): Promise<any> {
+    const { limit, page } = paginationQuery || {};
     const userData = await this.dataSource
       .getRepository(User)
       .createQueryBuilder('user')
-      .select(['user.name', 'user.id'])
-      .skip(offset)
+      .select(['user.name', 'user.id', 'user.desc', 'user.avatar'])
+      .skip(page ? (page - 1) * limit : undefined)
       .take(limit)
       .getManyAndCount();
 
-    return { data: userData[0], limit, offset, total: userData[1] };
+    return { data: userData[0], limit, page, total: userData[1] };
   }
 
   async findOne(id: number) {
     const user = await this.usersRepository.find({
       where: { id: +id },
-      select: ['id', 'name'],
+      select: ['id', 'name', 'desc', 'avatar'],
     });
     if (!user) {
       throw new NotFoundException(`user ${id} not fount`);
@@ -58,14 +60,18 @@ export class UserService {
     return user[0];
   }
 
-  findByLikeName(name: string, paginationQuery: PaginationQueryDto) {
-    const { limit, offset } = paginationQuery;
-    return this.usersRepository.find({
-      where: { name: Like(`%${name}%`) },
-      select: ['id', 'name'],
-      skip: offset,
-      take: limit,
-    });
+  async findByLikeName(name: string, paginationQuery: PaginationQueryDto) {
+    const { limit, page } = paginationQuery;
+    const userData = await this.dataSource
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .select(['user.name', 'user.id', 'user.desc', 'user.avatar'])
+      .where({ name: Like(`%${name}%`) })
+      .skip(page ? (page - 1) * limit : undefined)
+      .take(limit)
+      .getManyAndCount();
+
+    return { data: userData[0], limit, page, total: userData[1] };
   }
 
   async create(user: CreateUserDto): Promise<User> {
@@ -80,17 +86,17 @@ export class UserService {
     return this.usersRepository.save(newUser);
   }
 
-  async update(id: number, user: UpdateUserDto): Promise<User> {
-    const nameExist = await this.findByName(user.name);
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const nameExist = await this.findByName(updateUserDto.name);
     if (nameExist) {
       throw new HttpException(
-        `name ${user.name} has been used`,
+        `name ${updateUserDto.name} has been used`,
         HttpStatus.CONFLICT,
       );
     } else {
       const existUser = await this.usersRepository.preload({
         id,
-        ...user,
+        ...updateUserDto,
       });
       if (!existUser) {
         throw new HttpException(
@@ -111,5 +117,17 @@ export class UserService {
       );
     }
     await this.usersRepository.remove(existUser);
+  }
+
+  async uploadAvatar(userId: number, file: Express.Multer.File) {
+    const buffer = await this.imageService.compression(file.buffer);
+    const user = await this.usersRepository.preload({
+      id: userId,
+      avatar: buffer,
+    });
+    if (!user) {
+      throw new NotFoundException('not found');
+    }
+    return this.usersRepository.save(user);
   }
 }

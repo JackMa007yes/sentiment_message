@@ -1,9 +1,12 @@
-import { IsString } from 'class-validator';
+import { IsInt, IsString } from 'class-validator';
 
 export class UpdateUserDto {
   @IsString()
   readonly name: string;
 
   @IsString()
-  readonly password: string;
+  readonly desc: string;
+
+  @IsInt()
+  readonly gender: number;
 }

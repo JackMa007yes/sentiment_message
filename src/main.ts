@@ -17,7 +17,7 @@ async function bootstrap() {
       },
     }),
   );
-  app.useGlobalInterceptors(new WrapResponseInterceptor());
+  // app.useGlobalInterceptors(new WrapResponseInterceptor());
   app.setGlobalPrefix('api');
 
   // OpenAPI

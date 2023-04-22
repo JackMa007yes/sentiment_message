@@ -9,6 +9,11 @@ import {
   ManyToMany,
 } from 'typeorm';
 
+export enum GenderType {
+  FEMALE,
+  MALE,
+}
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -19,6 +24,19 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({
+    type: 'enum',
+    enum: GenderType,
+    default: GenderType.MALE,
+  })
+  gender: GenderType;
+
+  @Column({ default: '' })
+  desc: string;
+
+  @Column({ type: 'bytea', default: '' })
+  avatar: Buffer;
 
   @CreateDateColumn()
   created_at: Date;
