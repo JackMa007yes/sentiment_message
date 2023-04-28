@@ -1,4 +1,5 @@
 import { Room } from 'src/room/entities/room.entity';
+import { Session } from 'src/session/entities/session.entity';
 import {
   Column,
   Entity,
@@ -38,15 +39,15 @@ export class User {
   @Column({ type: 'bytea', default: '' })
   avatar: Buffer;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-  @UpdateDateColumn()
-  update_at: Date;
+  @UpdateDateColumn({ name: 'update_at' })
+  updateAt: Date;
 
   @JoinTable()
   @ManyToMany((type) => Room, (room) => room.users, {
-    cascade: true, // 可以这样设置 ['insert'] 代表仅仅插入时进行级联操作
+    cascade: true,
   })
   rooms: Room[];
 }

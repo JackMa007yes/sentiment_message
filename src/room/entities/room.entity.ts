@@ -1,3 +1,4 @@
+import { Session } from 'src/session/entities/session.entity';
 import { User } from 'src/user/user.entity';
 import {
   Column,
@@ -6,6 +7,7 @@ import {
   CreateDateColumn,
   Generated,
   ManyToMany,
+  OneToMany,
 } from 'typeorm';
 
 export enum RoomType {
@@ -18,11 +20,6 @@ export class Room {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    default: '',
-  })
-  name: string;
-
   @Column()
   @Generated('uuid')
   uuid: string;
@@ -34,8 +31,13 @@ export class Room {
   })
   type: RoomType;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @OneToMany(() => Session, (session) => session.room, {
+    cascade: true,
+  })
+  sessions: Session[];
 
   @ManyToMany((type) => User, (user) => user.rooms)
   users: User[];

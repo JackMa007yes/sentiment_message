@@ -1,3 +1,5 @@
+import { CreateSessionDto } from './../../session/dto/create-session.dto';
+import { SentimentService } from './../../sentiment/sentiment.service';
 import { CreateMessageDto } from '../dto/create-message.dto';
 import { CreateRoomDto } from '../dto/create-room.dto';
 import { Message } from '../entities/message.entity';
@@ -5,7 +7,6 @@ import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import {
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -23,6 +24,7 @@ export class RoomService {
     private readonly RoomRepository: Repository<Room>,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
+    private readonly sentimentService: SentimentService,
   ) {}
 
   async findAll(paginationQuery?: PaginationQueryDto) {
@@ -49,6 +51,19 @@ export class RoomService {
     return room;
   }
 
+  async findOneWithSession(id: number) {
+    const room = await this.RoomRepository.findOne({
+      where: {
+        id,
+      },
+      relations: ['sessions'],
+    });
+    if (!room) {
+      throw new NotFoundException('not found');
+    }
+    return room;
+  }
+
   async findByUserId(id: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -65,20 +80,34 @@ export class RoomService {
     return roomIds;
   }
 
-  async create(createRoom: CreateRoomDto) {
-    const users = await this.userService.findByIdList(createRoom.users);
+  async create(createRoomDto: CreateRoomDto) {
+    const users = await this.userService.findByIdList(createRoomDto.users);
     const rooms = await this.RoomRepository.find({
       relations: { users: true },
     });
     const existRoom = rooms.some((room) => {
-      if (room.users.length !== createRoom.users.length) return false;
-      return room.users.every((user) => createRoom.users.includes(user.id));
+      if (room.users.length !== createRoomDto.users.length) return false;
+      return room.users.every((user) => createRoomDto.users.includes(user.id));
     });
     if (existRoom) {
       throw new HttpException(`room has been created`, HttpStatus.CONFLICT);
     }
 
-    const room = this.RoomRepository.create({ ...createRoom, users });
+    const fromSession: CreateSessionDto = {
+      fromUserId: createRoomDto.users[0],
+      toUserId: createRoomDto.users[1],
+    };
+
+    const toSession: CreateSessionDto = {
+      fromUserId: createRoomDto.users[1],
+      toUserId: createRoomDto.users[0],
+    };
+
+    const room = this.RoomRepository.create({
+      ...createRoomDto,
+      users,
+      sessions: [fromSession, toSession],
+    });
     const savedRoom = await this.RoomRepository.save(room);
     return savedRoom.id;
   }
@@ -97,7 +126,11 @@ export class RoomService {
   }
 
   async addMessage(createMessageDto: CreateMessageDto) {
-    const message = this.messageRepository.create(createMessageDto);
+    const score = this.sentimentService.analyze(createMessageDto.message);
+    const message = this.messageRepository.create({
+      ...createMessageDto,
+      sentiment_score: score,
+    });
     return await this.messageRepository.save(message);
   }
 }

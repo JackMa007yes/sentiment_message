@@ -11,7 +11,7 @@ import {
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signIn.dto';
 import { AuthGuard } from './auth.gaurd';
-import { Public } from 'src/common/decorators/punlic.decorators';
+import { Public } from 'src/common/decorators/public.decorators';
 
 @Controller('auth')
 export class AuthController {

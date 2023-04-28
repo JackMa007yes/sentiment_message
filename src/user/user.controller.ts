@@ -19,7 +19,7 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { Public } from 'src/common/decorators/punlic.decorators';
+import { Public } from 'src/common/decorators/public.decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')

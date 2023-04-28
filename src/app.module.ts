@@ -1,3 +1,4 @@
+import { SessionModule } from './session/session.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from '@hapi/joi';
@@ -32,6 +33,7 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     UserModule,
     RoomModule,
+    SessionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

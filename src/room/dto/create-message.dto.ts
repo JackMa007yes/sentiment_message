@@ -9,7 +9,4 @@ export class CreateMessageDto {
 
   @IsString()
   readonly message: string;
-
-  @IsInt()
-  sentiment_score: number;
 }

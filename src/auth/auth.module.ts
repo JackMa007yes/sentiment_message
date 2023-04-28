@@ -20,6 +20,7 @@ import { AuthGuard } from './auth.gaurd';
     }),
   ],
   controllers: [AuthController],
+  exports: [AuthService],
   providers: [
     AuthService,
     {

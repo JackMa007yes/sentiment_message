@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-// import { sharp } from 'sharp';
-const sharp = require('sharp')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const sharp = require('sharp');
 
 @Injectable()
 export class ImageService {
