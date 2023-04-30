@@ -34,7 +34,7 @@ export class AuthService {
       });
       return payload;
     } catch {
-      throw new UnauthorizedException();
+      return null;
     }
   }
 }

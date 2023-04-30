@@ -23,7 +23,7 @@ export class User {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
   @Column({
@@ -36,7 +36,7 @@ export class User {
   @Column({ default: '' })
   desc: string;
 
-  @Column({ type: 'bytea', default: '' })
+  @Column({ type: 'bytea', default: '', select: false })
   avatar: Buffer;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -47,7 +47,7 @@ export class User {
 
   @JoinTable()
   @ManyToMany((type) => Room, (room) => room.users, {
-    cascade: true,
+    cascade: false,
   })
   rooms: Room[];
 }

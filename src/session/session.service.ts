@@ -1,5 +1,4 @@
 import { UpdateSessionDto } from './dto/update-session.dto';
-import { CreateSessionDto } from './dto/create-session.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,8 +16,13 @@ export class SessionService {
   }
 
   async findByUserId(userId: number) {
-    return await this.sessionRepository.find({
-      where: { fromUserId: userId },
+    return this.sessionRepository.find({
+      relations: { fromUser: true, toUser: true },
+      where: {
+        fromUser: {
+          id: userId,
+        },
+      },
     });
   }
 

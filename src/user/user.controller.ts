@@ -10,27 +10,20 @@ import {
   Request,
   Param,
   Post,
-  Query,
   UseInterceptors,
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
-  HttpCode,
+  Query,
 } from '@nestjs/common';
-import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { Public } from 'src/common/decorators/public.decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { GetUserListDto } from './dto/get-user-list.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Get()
-  async getAll(@Query() paginationQuery?: PaginationQueryDto) {
-    const list = await this.userService.findAll(paginationQuery);
-    return list;
-  }
 
   @Get('my')
   async getProfile(@Request() req: any) {
@@ -38,15 +31,9 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
-  @Get(':userName')
-  async getUserList(
-    @Param('userName') userName: string,
-    paginationQuery?: PaginationQueryDto,
-  ) {
-    const list = await this.userService.findByLikeName(
-      userName,
-      paginationQuery,
-    );
+  @Get()
+  async getUserList(@Query() getUserListDto: GetUserListDto) {
+    const list = await this.userService.findByLikeName(getUserListDto);
     return list;
   }
 

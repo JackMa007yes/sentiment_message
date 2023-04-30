@@ -39,6 +39,8 @@ export class Room {
   })
   sessions: Session[];
 
-  @ManyToMany((type) => User, (user) => user.rooms)
+  @ManyToMany((type) => User, (user) => user.rooms, {
+    cascade: true,
+  })
   users: User[];
 }

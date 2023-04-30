@@ -3,11 +3,7 @@ import { RoomType } from '../entities/room.entity';
 
 export class CreateRoomDto {
   @IsOptional()
-  @IsString()
-  readonly name: string;
-
-  @IsOptional()
-  @IsString()
+  @IsInt()
   readonly type: RoomType;
 
   @IsInt({ each: true })

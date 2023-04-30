@@ -45,9 +45,9 @@ export class MessageGateway
   @WebSocketServer() server: Server;
 
   async handleConnection(@ConnectedSocket() client: Socket): Promise<void> {
-    // const token = client.handshake.headers.authorization;
-    // const payload = await this.authService.verifyAccessToken(token);
-    // (client as any).$metaData.userId = payload.sub;
+    const token = client.handshake.query.token as string;
+    const payload = await this.authService.verifyAccessToken(token);
+    (client as any).$metaData = { userId: payload.sub };
   }
 
   async handleDisconnect(): Promise<void> {
@@ -98,13 +98,13 @@ export class MessageGateway
     const room = await this.roomService.findOneWithSession(roomId);
 
     room.sessions.forEach(async (session) => {
-      if (session.fromUserId === userId) {
+      if (session.fromUser.id === userId) {
         this.sessionService.updateInSession({
           id: session.id,
           lastMessage: message,
         });
       } else {
-        if (this.checkInRoom(session.toUserId, roomId)) {
+        if (this.checkInRoom(session.toUser.id, roomId)) {
           // 在当前对话中
           this.sessionService.updateInSession({
             id: session.id,
@@ -114,7 +114,7 @@ export class MessageGateway
             type: MessageEventType.ADD_MESSAGE,
             payload: data.payload.message,
           });
-        } else if (this.checkConnectState(session.toUserId)) {
+        } else if (this.checkConnectState(session.toUser.id)) {
           // 在线 但是不在当前会话
           const newSession = await this.sessionService.update({
             id: session.id,

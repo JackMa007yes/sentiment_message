@@ -11,6 +11,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, DataSource } from 'typeorm';
 import { User } from '../user.entity';
+import { GetUserListDto } from '../dto/get-user-list.dto';
 
 @Injectable()
 export class UserService {
@@ -26,7 +27,7 @@ export class UserService {
     const userData = await this.dataSource
       .getRepository(User)
       .createQueryBuilder('user')
-      .select(['user.name', 'user.id', 'user.desc', 'user.avatar'])
+      .addSelect('user.avatar')
       .skip(page ? (page - 1) * limit : undefined)
       .take(limit)
       .getManyAndCount();
@@ -35,10 +36,13 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    const user = await this.usersRepository.find({
-      where: { id: +id },
-      select: ['id', 'name', 'desc', 'avatar'],
-    });
+    const user = await this.dataSource
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .addSelect('user.avatar')
+      .where({ id: id })
+      .getMany();
+
     if (!user) {
       throw new NotFoundException(`user ${id} not fount`);
     }
@@ -54,21 +58,25 @@ export class UserService {
   }
 
   async findByName(name: string) {
-    const user = await this.usersRepository.find({
-      where: { name: name },
-    });
+    const user = await this.dataSource
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .addSelect('user.avatar')
+      .where({ name: name })
+      .getMany();
+
     return user[0];
   }
 
-  async findByLikeName(name: string, paginationQuery: PaginationQueryDto) {
-    const { limit, page } = paginationQuery;
+  async findByLikeName(getUserListDto: GetUserListDto) {
+    const { limit, page, keyword } = getUserListDto;
     const userData = await this.dataSource
       .getRepository(User)
       .createQueryBuilder('user')
-      .select(['user.name', 'user.id', 'user.desc', 'user.avatar'])
-      .where({ name: Like(`%${name}%`) })
+      .where(keyword ? { name: Like(`%${keyword}%`) } : {})
       .skip(page ? (page - 1) * limit : undefined)
       .take(limit)
+      .addSelect('user.avatar')
       .getManyAndCount();
 
     return { data: userData[0], limit, page, total: userData[1] };
