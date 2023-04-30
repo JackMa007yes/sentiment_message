@@ -57,15 +57,20 @@ export class UserService {
     return userList;
   }
 
-  async findByName(name: string) {
+  async findByName(name: string, withPathword = false) {
     const user = await this.dataSource
       .getRepository(User)
       .createQueryBuilder('user')
       .addSelect('user.avatar')
+      .addSelect(withPathword ? 'user.password' : undefined)
       .where({ name: name })
       .getMany();
 
     return user[0];
+  }
+
+  async verifyUser(name: string) {
+    return this.findByName(name, true);
   }
 
   async findByLikeName(getUserListDto: GetUserListDto) {

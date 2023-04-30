@@ -17,7 +17,7 @@ export class AuthService {
   ) {}
 
   async signIn(name, pass) {
-    const user = await this.userService.findByName(name);
+    const user = await this.userService.verifyUser(name);
     if (user?.password !== pass) {
       throw new HttpException(`wrong password`, HttpStatus.FORBIDDEN);
     }
