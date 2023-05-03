@@ -1,7 +1,7 @@
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Session } from './entities/session.entity';
 
 @Injectable()
@@ -9,6 +9,7 @@ export class SessionService {
   constructor(
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
+    private readonly dataSource: DataSource,
   ) {}
 
   findAll() {
@@ -16,14 +17,16 @@ export class SessionService {
   }
 
   async findByUserId(userId: number) {
-    return this.sessionRepository.find({
-      relations: { fromUser: true, toUser: true },
-      where: {
-        fromUser: {
-          id: userId,
-        },
-      },
-    });
+    return this.dataSource
+      .getRepository(Session)
+      .createQueryBuilder('session')
+      .leftJoinAndSelect('session.fromUser', 'fromUser')
+      .leftJoinAndSelect('session.room', 'room')
+      .addSelect('fromUser.avatar')
+      .leftJoinAndSelect('session.toUser', 'toUser')
+      .addSelect('toUser.avatar')
+      .where('fromUser.id = :userId', { userId })
+      .getMany();
   }
 
   async update(updateSessionDto: UpdateSessionDto, Increase = true) {
@@ -35,7 +38,7 @@ export class SessionService {
     const updatedSession = await this.sessionRepository.preload({
       ...existSession,
       lastMessage,
-      unreadCount: Increase ? existSession.unreadCount++ : 0,
+      unreadCount: Increase ? ++existSession.unreadCount : 0,
     });
     return this.sessionRepository.save(updatedSession);
   }

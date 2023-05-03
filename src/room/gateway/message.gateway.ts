@@ -65,13 +65,19 @@ export class MessageGateway
       return new WsException(`room ${roomId} not exist`);
     }
 
-    const messages = await this.roomService.getMessage(
-      roomId,
-      DEFAULT_PAGINATION,
+    const roomList = Array.from(client.rooms).filter(
+      (item) => item !== client.id,
     );
-
+    if (roomList.length) {
+      roomList.forEach((roomId) => client.leave(roomId));
+    }
     client.join(String(roomId));
-    client.emit('message', messages);
+
+    // const messages = await this.roomService.getMessage(
+    //   roomId,
+    //   DEFAULT_PAGINATION,
+    // );
+    // client.emit(EventType.MESSAGE, messages);
   }
 
   @SubscribeMessage(EventType.LEAVE_ROOM)
@@ -90,10 +96,10 @@ export class MessageGateway
   @SubscribeMessage(EventType.MESSAGE)
   async handleMessageEvent(
     @MessageBody() data: MessageEventDto,
-    @ConnectedSocket() client: Socket,
+    // @ConnectedSocket() client: Socket,
   ) {
     const { roomId, userId, message } = data.payload;
-    await this.roomService.addMessage(data.payload);
+    const newMessage = await this.roomService.addMessage(data.payload);
 
     const room = await this.roomService.findOneWithSession(roomId);
 
@@ -103,28 +109,32 @@ export class MessageGateway
           id: session.id,
           lastMessage: message,
         });
+        this.server.to(String(roomId)).emit(EventType.MESSAGE, {
+          type: MessageEventType.ADD_MESSAGE,
+          payload: newMessage,
+        });
       } else {
-        if (this.checkInRoom(session.toUser.id, roomId)) {
+        if (this.checkInRoom(session.fromUser.id, roomId)) {
           // 在当前对话中
           this.sessionService.updateInSession({
             id: session.id,
             lastMessage: message,
           });
-          client.to(String(roomId)).emit(EventType.MESSAGE, {
+          this.server.to(String(roomId)).emit(EventType.MESSAGE, {
             type: MessageEventType.ADD_MESSAGE,
-            payload: data.payload.message,
+            payload: newMessage,
           });
-        } else if (this.checkConnectState(session.toUser.id)) {
+        } else if (this.checkConnectState(session.fromUser.id)) {
           // 在线 但是不在当前会话
           const newSession = await this.sessionService.update({
             id: session.id,
             lastMessage: message,
           });
-          client.to(String(roomId)).emit(EventType.SESSION, {
+          this.server.to(String(roomId)).emit(EventType.SESSION, {
             type: SessionEventType.UPDATE,
             payload: {
               sessionId: session.id,
-              message: message,
+              message: newMessage,
               updateAt: newSession.lastMessageTime,
             },
           });
@@ -150,10 +160,14 @@ export class MessageGateway
   private checkInRoom(userId: number, roomId: number) {
     const roomMemberSet = this.server.sockets.adapter.rooms.get(String(roomId));
     let res = false;
-    roomMemberSet.forEach((value: any) => {
-      if ((this.server.sockets.sockets.get(value) as any).$metaData === userId)
-        res = true;
-    });
+    roomMemberSet &&
+      roomMemberSet.forEach((value: any) => {
+        if (
+          (this.server.sockets.sockets.get(value) as any).$metaData.userId ===
+          userId
+        )
+          res = true;
+      });
     return res;
   }
 }

@@ -128,6 +128,7 @@ export class RoomService {
       .getRepository(Message)
       .createQueryBuilder('message')
       .where({ roomId: id })
+      .orderBy('id', 'DESC')
       .skip(page ? (page - 1) * limit : undefined)
       .take(limit)
       .getManyAndCount();

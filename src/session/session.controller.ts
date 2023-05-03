@@ -10,8 +10,8 @@ export class SessionController {
     return this.sessionService.findByUserId(req.user.sub);
   }
 
-  @Get('/:id')
-  async getA(@Param('id') id) {
-    return this.sessionService.findByUserId(Number(id));
-  }
+  // @Get('/:id')
+  // async getA(@Param('id') id) {
+  //   return this.sessionService.findByUserId(Number(id));
+  // }
 }
