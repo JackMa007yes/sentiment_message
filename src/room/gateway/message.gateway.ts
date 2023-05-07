@@ -96,12 +96,17 @@ export class MessageGateway
   @SubscribeMessage(EventType.MESSAGE)
   async handleMessageEvent(
     @MessageBody() data: MessageEventDto,
-    // @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket,
   ) {
     const { roomId, userId, message } = data.payload;
     const newMessage = await this.roomService.addMessage(data.payload);
 
     const room = await this.roomService.findOneWithSession(roomId);
+
+    this.server.to(String(roomId)).emit(EventType.MESSAGE, {
+      type: MessageEventType.ADD_MESSAGE,
+      payload: newMessage,
+    });
 
     room.sessions.forEach(async (session) => {
       if (session.fromUser.id === userId) {
@@ -109,20 +114,22 @@ export class MessageGateway
           id: session.id,
           lastMessage: message,
         });
-        this.server.to(String(roomId)).emit(EventType.MESSAGE, {
-          type: MessageEventType.ADD_MESSAGE,
-          payload: newMessage,
-        });
+        // this.server.to(String(roomId)).emit(EventType.MESSAGE, {
+        //   type: MessageEventType.ADD_MESSAGE,
+        //   payload: newMessage,
+        // });
       } else {
         if (this.checkInRoom(session.fromUser.id, roomId)) {
           // 在当前对话中
-          this.sessionService.updateInSession({
+          const newSession = await this.sessionService.updateInSession({
             id: session.id,
             lastMessage: message,
           });
-          this.server.to(String(roomId)).emit(EventType.MESSAGE, {
-            type: MessageEventType.ADD_MESSAGE,
-            payload: newMessage,
+          const targetClient = this.getClientByUserId(session.fromUser.id)
+          
+          targetClient.emit(EventType.SESSION, {
+            type: SessionEventType.UPDATE,
+            payload: newSession,
           });
         } else if (this.checkConnectState(session.fromUser.id)) {
           // 在线 但是不在当前会话
@@ -130,14 +137,14 @@ export class MessageGateway
             id: session.id,
             lastMessage: message,
           });
-          this.server.to(String(roomId)).emit(EventType.SESSION, {
+
+          const targetClient = this.getClientByUserId(session.fromUser.id)
+          
+          targetClient.emit(EventType.SESSION, {
             type: SessionEventType.UPDATE,
-            payload: {
-              sessionId: session.id,
-              message: newMessage,
-              updateAt: newSession.lastMessageTime,
-            },
+            payload: newSession,
           });
+
         } else {
           // 离线
           this.sessionService.update({
@@ -158,8 +165,8 @@ export class MessageGateway
   }
 
   private checkInRoom(userId: number, roomId: number) {
-    const roomMemberSet = this.server.sockets.adapter.rooms.get(String(roomId));
     let res = false;
+    const roomMemberSet = this.server.sockets.adapter.rooms.get(String(roomId));
     roomMemberSet &&
       roomMemberSet.forEach((value: any) => {
         if (
@@ -169,5 +176,13 @@ export class MessageGateway
           res = true;
       });
     return res;
+  }
+
+  private getClientByUserId(userId: number): Socket | undefined {
+    let res
+    this.server.sockets.sockets.forEach((value: any) => {
+      if (value.$metaData.userId === userId) res = value;
+    });
+    return res
   }
 }

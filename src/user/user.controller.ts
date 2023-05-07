@@ -48,12 +48,9 @@ export class UserController {
     return this.userService.create(createUser);
   }
 
-  @Patch(':userId')
-  async updateUser(
-    @Param('userId') userId: number,
-    @Body() updateUser: UpdateUserDto,
-  ) {
-    return this.userService.update(userId, updateUser);
+  @Patch()
+  async updateUser(@Body() updateUser: UpdateUserDto, @Request() request: any) {
+    return this.userService.update(request.user.sub, updateUser);
   }
 
   @Post('/avatar')

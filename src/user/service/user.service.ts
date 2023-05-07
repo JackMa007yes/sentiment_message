@@ -74,11 +74,11 @@ export class UserService {
   }
 
   async findByLikeName(getUserListDto: GetUserListDto) {
-    const { limit, page, keyword } = getUserListDto;
+    const { limit, page, keywords } = getUserListDto;
     const userData = await this.dataSource
       .getRepository(User)
       .createQueryBuilder('user')
-      .where(keyword ? { name: Like(`%${keyword}%`) } : {})
+      .where(keywords ? { name: Like(`%${keywords}%`) } : {})
       .skip(page ? (page - 1) * limit : undefined)
       .take(limit)
       .addSelect('user.avatar')
@@ -100,8 +100,8 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const nameExist = await this.findByName(updateUserDto.name);
-    if (nameExist) {
+    const sameNameUser = await this.findByName(updateUserDto.name);
+    if (sameNameUser && sameNameUser.id !== id) {
       throw new HttpException(
         `name ${updateUserDto.name} has been used`,
         HttpStatus.CONFLICT,

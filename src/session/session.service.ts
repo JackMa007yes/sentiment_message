@@ -44,7 +44,7 @@ export class SessionService {
   }
 
   async updateInSession(updateSessionDto: UpdateSessionDto) {
-    this.update(updateSessionDto, false);
+    return this.update(updateSessionDto, false);
   }
 
   async check(sessionId: number) {
