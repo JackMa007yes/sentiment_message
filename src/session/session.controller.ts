@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Request } from '@nestjs/common';
+import { Controller, Get, Param, Request, Post } from '@nestjs/common';
 import { SessionService } from './session.service';
 
 @Controller('session')
@@ -14,6 +14,7 @@ export class SessionController {
   async resetUnreadCount(@Param('id') id: number) {
     return this.sessionService.check(id);
   }
+
   // @Get('/:id')
   // async getA(@Param('id') id) {
   //   return this.sessionService.findByUserId(Number(id));

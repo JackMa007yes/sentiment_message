@@ -103,48 +103,49 @@ export class MessageGateway
 
     const room = await this.roomService.findOneWithSession(roomId);
 
+    // message
     this.server.to(String(roomId)).emit(EventType.MESSAGE, {
       type: MessageEventType.ADD_MESSAGE,
       payload: newMessage,
     });
 
+    // session
     room.sessions.forEach(async (session) => {
       if (session.fromUser.id === userId) {
-        this.sessionService.updateInSession({
+        const updatedSession = await this.sessionService.updateInSession({
           id: session.id,
           lastMessage: message,
         });
-        // this.server.to(String(roomId)).emit(EventType.MESSAGE, {
-        //   type: MessageEventType.ADD_MESSAGE,
-        //   payload: newMessage,
-        // });
+        client.emit(EventType.SESSION, {
+          type: SessionEventType.UPDATE,
+          payload: updatedSession,
+        });
       } else {
         if (this.checkInRoom(session.fromUser.id, roomId)) {
           // 在当前对话中
-          const newSession = await this.sessionService.updateInSession({
+          const updatedSession = await this.sessionService.updateInSession({
             id: session.id,
             lastMessage: message,
           });
-          const targetClient = this.getClientByUserId(session.fromUser.id)
-          
+          const targetClient = this.getClientByUserId(session.fromUser.id);
+
           targetClient.emit(EventType.SESSION, {
             type: SessionEventType.UPDATE,
-            payload: newSession,
+            payload: updatedSession,
           });
         } else if (this.checkConnectState(session.fromUser.id)) {
           // 在线 但是不在当前会话
-          const newSession = await this.sessionService.update({
+          const updatedSession = await this.sessionService.update({
             id: session.id,
             lastMessage: message,
           });
 
-          const targetClient = this.getClientByUserId(session.fromUser.id)
-          
+          const targetClient = this.getClientByUserId(session.fromUser.id);
+
           targetClient.emit(EventType.SESSION, {
             type: SessionEventType.UPDATE,
-            payload: newSession,
+            payload: updatedSession,
           });
-
         } else {
           // 离线
           this.sessionService.update({
@@ -179,10 +180,10 @@ export class MessageGateway
   }
 
   private getClientByUserId(userId: number): Socket | undefined {
-    let res
+    let res;
     this.server.sockets.sockets.forEach((value: any) => {
       if (value.$metaData.userId === userId) res = value;
     });
-    return res
+    return res;
   }
 }
