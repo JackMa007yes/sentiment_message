@@ -36,8 +36,8 @@ export class User {
   @Column({ default: '' })
   desc: string;
 
-  @Column({ type: 'bytea', default: '', select: false })
-  avatar: Buffer;
+  @Column({ default: '', select: false })
+  avatar: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

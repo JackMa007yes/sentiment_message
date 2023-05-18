@@ -1,7 +1,8 @@
-import { SentimentService } from './../../sentiment/sentiment.service';
+import { OSSService } from 'src/common/services/OSS.service';
+import { SentimentService } from '../../common/services/sentiment.service';
 import { CreateMessageDto } from '../dto/create-message.dto';
 import { CreateRoomDto } from '../dto/create-room.dto';
-import { Message } from '../entities/message.entity';
+import { Message, MessageType } from '../entities/message.entity';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import {
   HttpException,
@@ -25,6 +26,7 @@ export class RoomService {
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
     private readonly sentimentService: SentimentService,
+    private readonly OSSService: OSSService,
   ) {}
 
   async findAll(paginationQuery?: PaginationQueryDto) {
@@ -137,11 +139,21 @@ export class RoomService {
   }
 
   async addMessage(createMessageDto: CreateMessageDto) {
-    const score = this.sentimentService.analyze(createMessageDto.message);
+    const score =
+      createMessageDto.type === MessageType.TEXT
+        ? this.sentimentService.analyze(createMessageDto.message)
+        : 0;
     const message = this.messageRepository.create({
       ...createMessageDto,
-      sentiment_score: score,
+      sentimentScore: score,
     });
     return await this.messageRepository.save(message);
+  }
+
+  async uploadImage(file: Express.Multer.File) {
+    return await this.OSSService.uploadMessageImage(
+      file.buffer,
+      file.originalname,
+    );
   }
 }

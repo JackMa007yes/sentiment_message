@@ -5,6 +5,11 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 
+export enum MessageType {
+  TEXT,
+  IMAGE,
+}
+
 @Entity()
 export class Message {
   @PrimaryGeneratedColumn()
@@ -16,11 +21,17 @@ export class Message {
   @Column()
   userId: number;
 
-  @Column()
+  @Column({ default: MessageType.TEXT })
+  type: MessageType;
+
+  @Column({ name: 'image_url', default: '' })
+  imageUrl: string;
+
+  @Column({ default: '' })
   message: string;
 
-  @Column()
-  sentiment_score: number;
+  @Column({ name: 'sentiment_score' })
+  sentimentScore: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -1,7 +1,20 @@
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { RoomService } from './service/room.service';
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
+} from '@nestjs/common';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 @Controller('room')
@@ -34,5 +47,23 @@ export class RoomController {
   @Post('message')
   async createMessage(@Body() createMessageDto: CreateMessageDto) {
     return this.roomService.addMessage(createMessageDto);
+  }
+
+  @Post('message/image')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAvatar(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1000 * 1000 * 10 }),
+          new FileTypeValidator({
+            fileType: /image\/png|image\/jpg|image\/jpeg/,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.roomService.uploadImage(file);
   }
 }

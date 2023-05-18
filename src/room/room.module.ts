@@ -1,3 +1,4 @@
+import { OSSService } from 'src/common/services/OSS.service';
 import { SessionModule } from './../session/session.module';
 import { SentimentModule } from './../sentiment/sentiment.module';
 import { UserModule } from './../user/user.module';
@@ -20,7 +21,7 @@ import { Session } from 'src/session/entities/session.entity';
     AuthModule,
   ],
   controllers: [RoomController],
-  providers: [RoomService, MessageGateway],
+  providers: [RoomService, OSSService, MessageGateway],
   exports: [RoomService],
 })
 export class RoomModule {}

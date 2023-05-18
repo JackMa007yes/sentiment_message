@@ -1,7 +1,3 @@
-import { ImageService } from './image.service';
-import { UpdateUserDto } from '../dto/update-user.dto';
-import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
-import { CreateUserDto } from '../dto/create-user.dto';
 import {
   HttpException,
   HttpStatus,
@@ -10,7 +6,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, DataSource } from 'typeorm';
+import { OSSService } from 'src/common/services/OSS.service';
+import { ImageService } from './image.service';
 import { User } from '../user.entity';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { CreateUserDto } from '../dto/create-user.dto';
 import { GetUserListDto } from '../dto/get-user-list.dto';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class UserService {
     private usersRepository: Repository<User>,
     private dataSource: DataSource,
     private imageService: ImageService,
+    private OSSService: OSSService,
   ) {}
 
   async findAll(paginationQuery?: PaginationQueryDto): Promise<any> {
@@ -100,7 +102,8 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const nameExist = await this.findByName(updateUserDto.name);
+    const user = await this.findByName(updateUserDto.name);
+    const nameExist = user && user.id !== id;
     if (nameExist) {
       throw new HttpException(
         `name ${updateUserDto.name} has been used`,
@@ -133,14 +136,27 @@ export class UserService {
   }
 
   async uploadAvatar(userId: number, file: Express.Multer.File) {
-    const buffer = await this.imageService.compression(file.buffer);
-    const user = await this.usersRepository.preload({
-      id: userId,
-      avatar: buffer,
-    });
-    if (!user) {
-      throw new NotFoundException('not found');
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException('not found');
+      } else if (user.avatar) {
+        this.OSSService.deleteObject(user.avatar);
+      } else {
+        // Noop
+      }
+      const buffer = await this.imageService.compression(file.buffer);
+      const res = await this.OSSService.uploadAvatar(buffer, file.originalname);
+      const updatedUser = await this.usersRepository.preload({
+        id: userId,
+        avatar: res.Location,
+      });
+
+      return this.usersRepository.save(updatedUser);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.SERVICE_UNAVAILABLE);
     }
-    return this.usersRepository.save(user);
   }
 }

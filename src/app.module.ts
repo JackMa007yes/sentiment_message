@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { SessionModule } from './session/session.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -6,9 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { RoomModule } from './room/room.module';
-import { SentimentModule } from './sentiment/sentiment.module';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -29,7 +28,6 @@ import { ConfigModule } from '@nestjs/config';
       autoLoadEntities: true,
       synchronize: true,
     }),
-    SentimentModule,
     AuthModule,
     UserModule,
     RoomModule,

@@ -1,4 +1,4 @@
-import { SentimentService } from './sentiment.service';
+import { SentimentService } from '../common/services/sentiment.service';
 import { Module } from '@nestjs/common';
 
 @Module({
