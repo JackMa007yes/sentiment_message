@@ -16,11 +16,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async signIn(name, pass) {
-    const user = await this.userService.verifyUser(name);
-    if (user?.password !== pass) {
-      throw new HttpException(`wrong password`, HttpStatus.FORBIDDEN);
-    }
+  async login(user) {
     const payload = { name: user.name, sub: user.id };
     return {
       access_token: await this.jwtService.signAsync(payload),
@@ -36,5 +32,19 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  async validateUser(username: string, pass: string): Promise<any> {
+    const user = await this.userService.findByName(username, true);
+    if (user && user.password === pass) {
+      const { password, ...res } = user;
+      return res;
+    }
+    return null;
+  }
+
+  async getProfile(id?: number) {
+    if (!id) throw new UnauthorizedException();
+    return await this.userService.findOne(id);
   }
 }

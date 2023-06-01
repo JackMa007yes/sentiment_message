@@ -33,10 +33,15 @@ export class User {
   })
   gender: GenderType;
 
+  @Column({
+    default: 0,
+  })
+  memoji: number;
+
   @Column({ default: '' })
   desc: string;
 
-  @Column({ default: '', select: false })
+  @Column({ default: '' })
   avatar: string;
 
   @CreateDateColumn({ name: 'created_at' })

@@ -1,4 +1,3 @@
-import { ConfigModule } from '@nestjs/config';
 import { SessionModule } from './session/session.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,6 +7,7 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { RoomModule } from './room/room.module';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [

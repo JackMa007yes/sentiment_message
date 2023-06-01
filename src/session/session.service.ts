@@ -21,10 +21,9 @@ export class SessionService {
       .getRepository(Session)
       .createQueryBuilder('session')
       .leftJoinAndSelect('session.fromUser', 'fromUser')
-      .leftJoinAndSelect('session.room', 'room')
-      .addSelect('fromUser.avatar')
       .leftJoinAndSelect('session.toUser', 'toUser')
-      .addSelect('toUser.avatar')
+      .leftJoinAndSelect('session.room', 'room')
+      .leftJoinAndSelect('session.lastMessage', 'message')
       .where('fromUser.id = :userId', { userId })
       .getMany();
   }

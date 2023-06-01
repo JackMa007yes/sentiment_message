@@ -1,3 +1,4 @@
+import { Message } from 'src/room/entities/message.entity';
 import { Room } from 'src/room/entities/room.entity';
 import { User } from 'src/user/user.entity';
 import {
@@ -26,14 +27,18 @@ export class Session {
   @JoinColumn({ name: 'to_user' })
   toUser: User;
 
-  @Column({ name: 'last_message', default: '' })
-  lastMessage: string;
+  // @Column({ name: 'last_message', default: '' })
+  // lastMessage: string;
 
   @Column({ name: 'unread_count', default: 0 })
   unreadCount: number;
 
   @CreateDateColumn({ name: 'create_time' })
   createTime: string;
+
+  @ManyToOne(() => Message, { cascade: false })
+  @JoinColumn({ name: 'last_message' })
+  lastMessage: Message;
 
   @UpdateDateColumn({ name: 'last_message_time' })
   lastMessageTime: string;

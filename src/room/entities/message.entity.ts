@@ -30,7 +30,7 @@ export class Message {
   @Column({ default: '' })
   message: string;
 
-  @Column({ name: 'sentiment_score' })
+  @Column()
   sentimentScore: number;
 
   @CreateDateColumn({ name: 'created_at' })

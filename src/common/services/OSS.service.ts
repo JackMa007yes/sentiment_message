@@ -5,7 +5,7 @@ import COS from 'cos-nodejs-sdk-v5';
 import { ConfigService } from '@nestjs/config';
 
 const MESSAGE_IMAGE_KEY_PREFIX = 'chat_images/';
-const AVATAR_IMAGE_KEY_PREFIX = 'message_images/';
+const AVATAR_IMAGE_KEY_PREFIX = 'avatar_images/';
 
 @Injectable()
 export class OSSService {

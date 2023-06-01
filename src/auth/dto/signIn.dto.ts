@@ -2,7 +2,7 @@ import { IsString } from 'class-validator';
 
 export class SignInDto {
   @IsString()
-  readonly name: string;
+  readonly username: string;
 
   @IsString()
   readonly password: string;

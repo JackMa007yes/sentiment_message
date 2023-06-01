@@ -156,7 +156,10 @@ export class UserService {
 
       return this.usersRepository.save(updatedUser);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.SERVICE_UNAVAILABLE);
+      throw new HttpException(
+        'file upload failed',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
   }
 }

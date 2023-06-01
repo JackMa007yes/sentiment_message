@@ -114,7 +114,7 @@ export class MessageGateway
       if (session.fromUser.id === userId) {
         const updatedSession = await this.sessionService.updateInSession({
           id: session.id,
-          lastMessage: message,
+          lastMessage: newMessage,
         });
         client.emit(EventType.SESSION, {
           type: SessionEventType.UPDATE,
@@ -125,7 +125,7 @@ export class MessageGateway
           // 在当前对话中
           const updatedSession = await this.sessionService.updateInSession({
             id: session.id,
-            lastMessage: message,
+            lastMessage: newMessage,
           });
           const targetClient = this.getClientByUserId(session.fromUser.id);
 
@@ -137,7 +137,7 @@ export class MessageGateway
           // 在线 但是不在当前会话
           const updatedSession = await this.sessionService.update({
             id: session.id,
-            lastMessage: message,
+            lastMessage: newMessage,
           });
 
           const targetClient = this.getClientByUserId(session.fromUser.id);
@@ -150,7 +150,7 @@ export class MessageGateway
           // 离线
           this.sessionService.update({
             id: session.id,
-            lastMessage: message,
+            lastMessage: newMessage,
           });
         }
       }
