@@ -46,10 +46,10 @@
 * mobile
 
 <p align="center">
-  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_1.jpeg" alt="Nest Logo" width="140" />
-  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_2.jpeg" alt="Nest Logo" width="140" />
-  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_3.jpeg" alt="Nest Logo" width="140" />
-  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_4.jpeg" alt="Nest Logo" width="140" />
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_1.jpeg" alt="Nest Logo" width="200" />
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_2.jpeg" alt="Nest Logo" width="200" />
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_3.jpeg" alt="Nest Logo" width="200" />
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_4.jpeg" alt="Nest Logo" width="200" />
   
 </p>
 
