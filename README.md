@@ -12,7 +12,7 @@
 
 一个具备情绪分析功能的即时聊天应用
 
-## 已具备能力
+## ✅Done
 
 * 用户注册、登陆
 * 用户搜索，添加好友
@@ -23,14 +23,36 @@
 * 自定义虚拟形象
 * 移动端适配
 
-## TODO
+## 📚Todo
 
 * 本地缓存
 * 消息加密
 * 文件传输
 * 支持中文聊天信息的情绪分析
 
-## Installation
+## 📺 Screenshot
+
+* PC
+<p align="center">
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/pc_screenshot_1.png" alt="Nest Logo" />
+</p>
+<p align="center">
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/pc_screenshot_2.png" alt="Nest Logo" />
+</p>
+<p align="center">
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/pc_screenshot_3.png" alt="Nest Logo" />
+</p>
+* mobile
+<p align="center">
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_1.jpeg" alt="Nest Logo" />
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_2.jpeg" alt="Nest Logo" />
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_3.jpeg" alt="Nest Logo" />
+  <img src="https://chat-1318225819.cos.ap-shanghai.myqcloud.com/assets/mobile_screenshot_4.jpeg" alt="Nest Logo" />
+  
+</p>
+
+
+## ✨ Installation
 
 ```bash
 $ yarn install
